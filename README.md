@@ -76,7 +76,30 @@ usarlo o modificarlo.
 - **Modo día/noche** para la interfaz (el propio currículum siempre
   mantiene los colores que le hayas puesto, da igual el modo).
 
-## Cómo probarlo
+## Descargar la app ya compilada
+
+Si solo quieres usarla, sin tocar código: entra en la sección
+**[Releases](https://github.com/XIIRAD2/CreadorDeCurriculums/releases)** de
+este repositorio y descarga el instalador de tu sistema:
+
+- **Windows**: el archivo `.msi` o `.exe`.
+- **Mac**: el archivo `.dmg` — el mismo sirve tanto para Mac con chip Intel
+  como Apple Silicon (M1/M2/M3...).
+
+> Como es una app gratuita hecha por una persona, sin certificado de firma de
+> pago, el sistema operativo avisará la primera vez que la abras:
+> - **Windows**: dirá "Windows protegió tu PC" — pulsa **"Más información"**
+>   y luego **"Ejecutar de todas formas"**.
+> - **Mac**: dirá que no se puede abrir porque es de un desarrollador no
+>   identificado — ve a **Preferencias del Sistema → Privacidad y
+>   seguridad** y pulsa **"Abrir de todas formas"** junto al aviso sobre esta
+>   app (o clic derecho sobre la app → Abrir, la primera vez).
+>
+> Esto es normal en software de código abierto sin ese certificado de pago —
+> el código es público arriba, así que puedes revisarlo tú mismo si quieres
+> asegurarte de qué hace antes de abrirlo.
+
+## Cómo probarlo (desde el código)
 
 Necesitas tener instalado [Node.js](https://nodejs.org/) (versión 20 o
 superior). Luego, en una terminal:

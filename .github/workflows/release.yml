@@ -1,0 +1,65 @@
+name: Release desktop app
+
+# Builds the Tauri desktop app on real Windows and macOS runners and publishes
+# the installers (.msi/.exe for Windows, a universal .dmg for Mac — Intel +
+# Apple Silicon in one file) to a GitHub Release, so anyone can download a
+# ready-to-run app from the repo's "Releases" page without building from
+# source. Triggered by pushing a version tag (e.g. `git tag v0.1.0 && git
+# push --tags`), or manually from the Actions tab.
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: 'macos-latest'
+            args: '--target universal-apple-darwin'
+          - platform: 'windows-latest'
+            args: ''
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          # Only macOS needs both targets, for the universal (Intel + Apple
+          # Silicon) binary — harmless no-op on Windows.
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install frontend dependencies
+        run: npm install
+
+      - name: Build and release
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: 'Creador de Currículums ${{ github.ref_name }}'
+          releaseBody: |
+            Descarga el instalador de tu sistema operativo más abajo, en "Assets":
+            - **Windows**: el archivo `.msi` o `.exe`
+            - **Mac**: el archivo `.dmg` (sirve tanto para Mac con chip Intel como Apple Silicon)
+
+            Al ser una app sin firma digital de pago, es normal que el sistema
+            operativo avise antes de abrirla la primera vez — ver la nota en el
+            README sobre esto.
+          releaseDraft: true
+          args: ${{ matrix.args }}
