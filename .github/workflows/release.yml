@@ -61,5 +61,5 @@ jobs:
             Al ser una app sin firma digital de pago, es normal que el sistema
             operativo avise antes de abrirla la primera vez — ver la nota en el
             README sobre esto.
-          releaseDraft: true
+          releaseDraft: false
           args: ${{ matrix.args }}
