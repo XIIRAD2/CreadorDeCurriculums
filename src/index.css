@@ -1,0 +1,173 @@
+@import "tailwindcss";
+
+/* Curated font families, self-hosted so PDF export & offline use always match the preview */
+@import "@fontsource/inter/400.css";
+@import "@fontsource/inter/500.css";
+@import "@fontsource/inter/600.css";
+@import "@fontsource/inter/700.css";
+@import "@fontsource/roboto/400.css";
+@import "@fontsource/roboto/500.css";
+@import "@fontsource/roboto/700.css";
+@import "@fontsource/lato/400.css";
+@import "@fontsource/lato/700.css";
+@import "@fontsource/poppins/400.css";
+@import "@fontsource/poppins/500.css";
+@import "@fontsource/poppins/600.css";
+@import "@fontsource/poppins/700.css";
+@import "@fontsource/merriweather/400.css";
+@import "@fontsource/merriweather/700.css";
+@import "@fontsource/playfair-display/400.css";
+@import "@fontsource/playfair-display/600.css";
+@import "@fontsource/playfair-display/700.css";
+@import "@fontsource/source-sans-3/400.css";
+@import "@fontsource/source-sans-3/600.css";
+@import "@fontsource/nunito/400.css";
+@import "@fontsource/nunito/600.css";
+@import "@fontsource/nunito/700.css";
+
+:root {
+  color-scheme: light;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  font-family: "Inter", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  background-color: var(--color-slate-100);
+}
+
+/* Thin, unobtrusive scrollbars for the editor panels */
+.thin-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+.thin-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.thin-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 9999px;
+}
+.thin-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* The CV page itself: fixed A4 pixel size at 96dpi (210mm x 297mm). `display: flex` (not
+ * just min-height) is the part that matters for short CVs: a plain block's min-height
+ * doesn't count as a "definite height" for a percentage-height child (`h-full` inside a
+ * template resolves to nothing), so a template's colored sidebar bar would stop as soon
+ * as its own content ran out instead of reaching the bottom of the page. Making this a
+ * column flex container lets the template's root (given `flex-1`, not `h-full`) grow to
+ * fill this box's min-height, or beyond it for content that overflows — either way, the
+ * sidebar's height always matches whatever the page actually ends up being. */
+.cv-page {
+  display: flex;
+  flex-direction: column;
+  width: 794px;
+  min-height: 1123px;
+  background: #ffffff;
+}
+
+/* ---- Day/night mode for the app's own interface ---------------------------
+ * Overrides the underlying color tokens Tailwind's utilities already reference
+ * (`.bg-slate-100 { background-color: var(--color-slate-100) }`, etc. — Tailwind v4
+ * compiles every utility through a CSS variable), so the whole interface — toolbar,
+ * configurator, job tracker, modals — reskins to dark with no per-component classes to
+ * touch. Only the light-tint "badge" pairs (indigo/emerald/rose -50/-100/-700ish) get
+ * remapped too; strong/saturated accents (e.g. indigo-600 buttons) work unchanged on
+ * both backgrounds and are left alone on purpose.
+ *
+ * Deliberately does NOT reach the CV document itself: `.cv-page` below re-pins every
+ * one of these tokens straight back to its original light value, so the currículum
+ * always renders exactly as configured in "Diseño" no matter the app's own mode. */
+.dark {
+  color-scheme: dark;
+
+  /* Neutral grays (R=G=B, zero hue) — a Photoshop-style dark UI, not the blue-tinted
+   * "slate" cast the Tailwind hex equivalents have. */
+  --color-white: #232323;
+  --color-slate-50: #191919;
+  --color-slate-100: #191919;
+  --color-slate-200: #3a3a3a;
+  --color-slate-300: #4a4a4a;
+  --color-slate-400: #6e6e6e;
+  --color-slate-500: #9a9a9a;
+  --color-slate-600: #cccccc;
+  --color-slate-700: #e0e0e0;
+  --color-slate-800: #f2f2f2;
+  --color-slate-900: #fafafa;
+
+  --color-indigo-50: #1e1b4b;
+  --color-indigo-100: #312e81;
+  --color-indigo-700: #c7d2fe;
+
+  --color-emerald-50: #052e1f;
+  --color-emerald-200: #15803d;
+  --color-emerald-700: #6ee7b7;
+
+  --color-amber-50: #3d2c05;
+  --color-amber-100: #4a3608;
+  --color-amber-700: #fcd34d;
+
+  --color-rose-50: #3f0d16;
+  --color-rose-100: #4c0e1a;
+  --color-rose-200: #7f1d2e;
+  --color-rose-300: #9f2c42;
+  --color-rose-600: #fda4af;
+
+  --color-blue-50: #0c2a4a;
+  --color-orange-50: #4a2c0a;
+}
+
+.dark .thin-scrollbar {
+  scrollbar-color: #4a4a4a transparent;
+}
+.dark .thin-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #4a4a4a;
+}
+
+/* The document itself is never dark-mode'd — pin every token this override touches
+ * back to its original light value inside the CV page, however deep the `.dark`
+ * ancestor is. */
+.cv-page {
+  color-scheme: light;
+
+  --color-white: #fff;
+  --color-slate-50: oklch(98.4% 0.003 247.858);
+  --color-slate-100: oklch(96.8% 0.007 247.896);
+  --color-slate-200: oklch(92.9% 0.013 255.508);
+  --color-slate-300: oklch(86.9% 0.022 252.894);
+  --color-slate-400: oklch(70.4% 0.04 256.788);
+  --color-slate-500: oklch(55.4% 0.046 257.417);
+  --color-slate-600: oklch(44.6% 0.043 257.281);
+  --color-slate-700: oklch(37.2% 0.044 257.287);
+  --color-slate-800: oklch(27.9% 0.041 260.031);
+  --color-slate-900: oklch(20.8% 0.042 265.755);
+
+  --color-indigo-50: oklch(96.2% 0.018 272.314);
+  --color-indigo-100: oklch(93% 0.034 272.788);
+  --color-indigo-700: oklch(45.7% 0.24 277.023);
+
+  --color-emerald-50: oklch(97.9% 0.021 166.113);
+  --color-emerald-200: oklch(90.5% 0.093 164.15);
+  --color-emerald-700: oklch(50.8% 0.118 165.612);
+
+  --color-amber-50: oklch(98.7% 0.022 95.277);
+  --color-amber-100: oklch(96.2% 0.059 95.617);
+  --color-amber-700: oklch(55.5% 0.163 48.998);
+
+  --color-rose-50: oklch(96.9% 0.015 12.422);
+  --color-rose-100: oklch(94.1% 0.03 12.58);
+  --color-rose-200: oklch(89.2% 0.058 10.001);
+  --color-rose-300: oklch(81% 0.117 11.638);
+  --color-rose-600: oklch(58.6% 0.253 17.585);
+
+  --color-blue-50: oklch(97% 0.014 254.604);
+  --color-orange-50: oklch(98% 0.016 73.684);
+}
