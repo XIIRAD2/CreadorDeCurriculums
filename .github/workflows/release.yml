@@ -1,11 +1,11 @@
 name: Release desktop app
 
 # Builds the Tauri desktop app on real Windows and macOS runners and publishes
-# the installers (.msi/.exe for Windows, a universal .dmg for Mac — Intel +
-# Apple Silicon in one file) to a GitHub Release, so anyone can download a
-# ready-to-run app from the repo's "Releases" page without building from
-# source. Triggered by pushing a version tag (e.g. `git tag v0.1.0 && git
-# push --tags`), or manually from the Actions tab.
+# one installer per platform (.exe for Windows, a universal .dmg for Mac —
+# Intel + Apple Silicon in one file) to a GitHub Release, so anyone can
+# download a ready-to-run app from the repo's "Releases" page without
+# building from source. Triggered by pushing a version tag (e.g. `git tag
+# v0.1.0 && git push --tags`), or manually from the Actions tab.
 on:
   push:
     tags:
@@ -55,7 +55,7 @@ jobs:
           releaseName: 'Creador de Currículums ${{ github.ref_name }}'
           releaseBody: |
             Descarga el instalador de tu sistema operativo más abajo, en "Assets":
-            - **Windows**: el archivo `.msi` o `.exe`
+            - **Windows**: el archivo `.exe`
             - **Mac**: el archivo `.dmg` (sirve tanto para Mac con chip Intel como Apple Silicon)
 
             Al ser una app sin firma digital de pago, es normal que el sistema

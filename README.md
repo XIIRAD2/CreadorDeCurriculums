@@ -82,7 +82,7 @@ Si solo quieres usarla, sin tocar código: entra en la sección
 **[Releases](https://github.com/XIIRAD2/CreadorDeCurriculums/releases)** de
 este repositorio y descarga el instalador de tu sistema:
 
-- **Windows**: el archivo `.msi` o `.exe`.
+- **Windows**: el archivo `.exe`.
 - **Mac**: el archivo `.dmg` — el mismo sirve tanto para Mac con chip Intel
   como Apple Silicon (M1/M2/M3...).
 
