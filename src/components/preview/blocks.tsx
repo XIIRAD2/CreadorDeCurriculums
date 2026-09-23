@@ -30,6 +30,7 @@ function SectionTitle({ icon: Icon, tone, theme, children }: { icon: ComponentTy
   const borderColor = tone === 'sidebar' ? 'rgba(255,255,255,0.35)' : theme.accentColor
   return (
     <h3
+      data-cv-chunk=""
       className="mb-2 flex items-center gap-1.5 border-b-2 pb-1 text-[11px] font-bold uppercase tracking-widest"
       style={{ borderColor, fontFamily: theme.headingFont, breakAfter: 'avoid' }}
     >
@@ -76,7 +77,7 @@ function DescriptionText({ text, theme, spacing, className }: { text: string; th
 
 export function SummaryBlock({ cv, theme, spacing, tone }: BlockProps) {
   return (
-    <section style={{ marginBottom: spacing.sectionGap }}>
+    <section data-cv-chunk="" style={{ marginBottom: spacing.sectionGap }}>
       <SectionTitle icon={SECTION_ICONS.summary} tone={tone} theme={theme}>
         Perfil profesional
       </SectionTitle>
@@ -98,7 +99,7 @@ export function ExperienceBlock({ cv, theme, spacing, tone }: BlockProps) {
       </SectionTitle>
       <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.itemGap }}>
         {cv.experience.map((exp) => (
-          <div key={exp.id} style={{ breakInside: 'avoid' }}>
+          <div key={exp.id} data-cv-chunk="" style={{ breakInside: 'avoid' }}>
             <div className="flex flex-wrap items-baseline justify-between gap-x-3">
               <span className="font-semibold text-[1.02em]">{exp.position || 'Puesto'}</span>
               <span className="text-[0.82em] opacity-70 whitespace-nowrap">{formatRange(exp.startDate, exp.endDate, exp.current)}</span>
@@ -122,7 +123,7 @@ export function EducationBlock({ cv, theme, spacing, tone }: BlockProps) {
       </SectionTitle>
       <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.itemGap }}>
         {cv.education.map((edu) => (
-          <div key={edu.id} style={{ breakInside: 'avoid' }}>
+          <div key={edu.id} data-cv-chunk="" style={{ breakInside: 'avoid' }}>
             <div className="flex flex-wrap items-baseline justify-between gap-x-3">
               <span className="font-semibold text-[1.02em]">{edu.degree || 'Titulación'}</span>
               <span className="text-[0.82em] opacity-70 whitespace-nowrap">{formatRange(edu.startDate, edu.endDate, edu.current)}</span>
@@ -148,7 +149,7 @@ export function SkillsBlock({ cv, theme, spacing, tone }: BlockProps) {
       </SectionTitle>
       <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.itemGap * 0.7 }}>
         {cv.skills.map((skill) => (
-          <div key={skill.id}>
+          <div key={skill.id} data-cv-chunk="">
             <div className={`flex items-center justify-between text-[0.88em] ${showBar ? 'mb-0.5' : ''}`}>
               <span className="flex min-w-0 items-center gap-1.5">
                 <TechLogo name={skill.name} size={13} />
@@ -185,7 +186,7 @@ export function LanguagesBlock({ cv, theme, spacing, tone }: BlockProps) {
       </SectionTitle>
       <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.itemGap * 0.5 }}>
         {cv.languages.map((lang) => (
-          <div key={lang.id} className="flex items-center justify-between text-[0.9em]">
+          <div key={lang.id} data-cv-chunk="" className="flex items-center justify-between text-[0.9em]">
             <span>{lang.name || 'Idioma'}</span>
             <span className="opacity-70">{lang.level}</span>
           </div>
@@ -203,7 +204,7 @@ export function ProjectsBlock({ cv, theme, spacing, tone }: BlockProps) {
       </SectionTitle>
       <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.itemGap }}>
         {cv.projects.map((project) => (
-          <div key={project.id} style={{ breakInside: 'avoid' }}>
+          <div key={project.id} data-cv-chunk="" style={{ breakInside: 'avoid' }}>
             <div className="flex flex-wrap items-baseline justify-between gap-x-3">
               <span className="font-semibold text-[0.95em]">{project.name || 'Proyecto'}</span>
               {project.url && <span className="text-[0.78em] opacity-60">{project.url}</span>}
@@ -224,7 +225,7 @@ export function CertificationsBlock({ cv, theme, spacing, tone }: BlockProps) {
       </SectionTitle>
       <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.itemGap * 0.7 }}>
         {cv.certifications.map((cert) => (
-          <div key={cert.id} className="text-[0.9em]" style={{ breakInside: 'avoid' }}>
+          <div key={cert.id} data-cv-chunk="" className="text-[0.9em]" style={{ breakInside: 'avoid' }}>
             <div className="font-semibold">{cert.name || 'Certificación'}</div>
             <div className="opacity-70 text-[0.9em]">
               {[cert.issuer, formatMonthYear(cert.date)].filter(Boolean).join(' · ')}
@@ -244,7 +245,7 @@ export function LinksBlock({ cv, theme, spacing, tone }: BlockProps) {
       </SectionTitle>
       <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.itemGap * 0.5 }}>
         {cv.links.map((link) => (
-          <div key={link.id} className="text-[0.88em]">
+          <div key={link.id} data-cv-chunk="" className="text-[0.88em]">
             <span className="font-medium">{link.label || 'Enlace'}: </span>
             <span className="opacity-75 break-all">{link.url}</span>
           </div>

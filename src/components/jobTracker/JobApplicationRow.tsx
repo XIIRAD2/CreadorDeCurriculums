@@ -37,11 +37,45 @@ function rowBackgroundClass(app: JobApplication, band: ReturnType<typeof scoreBa
   return 'hover:bg-slate-50'
 }
 
-const SCORE_BADGE_CLASS: Record<ReturnType<typeof scoreBand>, string> = {
-  green: 'bg-emerald-100 text-emerald-700',
-  yellow: 'bg-amber-100 text-amber-700',
-  red: 'bg-rose-100 text-rose-600',
-  unscored: 'bg-slate-100 text-slate-400',
+const SCORE_TEXT_CLASS: Record<ReturnType<typeof scoreBand>, string> = {
+  green: 'text-emerald-600',
+  yellow: 'text-amber-600',
+  red: 'text-rose-600',
+  unscored: 'text-slate-400',
+}
+
+/** One factor's mini-bar within the score breakdown — an empty gray track means that
+ * factor had no data at all (dropped from the average, not scored as 0), same
+ * "unscored, not penalized" distinction `computeJobScore` already makes. */
+function ScoreBar({ value, colorClass }: { value: number | null; colorClass: string }) {
+  return (
+    <div className="h-[3px] w-full overflow-hidden rounded-full bg-slate-200">
+      {value !== null && <div className={`h-full rounded-full ${colorClass}`} style={{ width: `${value}%` }} />}
+    </div>
+  )
+}
+
+/** Compact fit-score cell: the overall number plus a 3-bar breakdown (tech/experience/
+ * competition) always visible underneath, instead of only on hover — so it's clear at a
+ * glance *which* factor is dragging a low score down, not just that it's low. */
+function ScoreBreakdown({ score, band }: { score: ReturnType<typeof computeJobScore>; band: ReturnType<typeof scoreBand> }) {
+  return (
+    <div
+      className="mx-auto flex w-12 flex-col items-center gap-1"
+      title={
+        score.overall === null
+          ? 'Configura "Mi perfil de búsqueda" para calcular una nota'
+          : `Tecnología ${score.tech ?? '—'} · Experiencia ${score.experience ?? '—'} · Competencia ${score.competition ?? '—'}`
+      }
+    >
+      <span className={`text-xs font-semibold ${SCORE_TEXT_CLASS[band]}`}>{score.overall ?? '—'}</span>
+      <div className="flex w-full flex-col gap-[2px]">
+        <ScoreBar value={score.tech} colorClass="bg-indigo-500" />
+        <ScoreBar value={score.experience} colorClass="bg-violet-500" />
+        <ScoreBar value={score.competition} colorClass="bg-amber-500" />
+      </div>
+    </div>
+  )
 }
 
 /** One row of the tracker grid. Text fields (company, offer, technologies) are
@@ -231,17 +265,8 @@ export function JobApplicationRow({ app, cvs, settings, selected, onToggleSelect
         />
       </td>
 
-      <td className="w-[60px] px-1 py-1 text-center">
-        <span
-          className={`inline-flex h-6 min-w-[2rem] items-center justify-center rounded-full px-1.5 text-xs font-semibold ${SCORE_BADGE_CLASS[band]}`}
-          title={
-            score.overall === null
-              ? 'Configura "Mi perfil de búsqueda" para calcular una nota'
-              : `Tecnología ${score.tech ?? '—'} · Experiencia ${score.experience ?? '—'} · Competencia ${score.competition ?? '—'}`
-          }
-        >
-          {score.overall ?? '—'}
-        </span>
+      <td className="w-[72px] px-1.5 py-1">
+        <ScoreBreakdown score={score} band={band} />
       </td>
 
       <td className="px-1 py-1">

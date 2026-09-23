@@ -6,8 +6,8 @@ import { CoverLetterPreview } from '@/components/preview/CoverLetterPreview'
 import { DEFAULT_COVER_LETTER } from '@/lib/defaultData'
 import { IconButton, Button } from '@/components/ui/Button'
 import { exportCvPdf, exportCoverLetterPdf } from '@/lib/exportPdf'
+import { PAGE_WIDTH_PX, PAGE_GAP_PX } from '@/components/preview/pageSize'
 
-const PAGE_WIDTH = 794
 const ZOOM_MIN = 0.4
 const ZOOM_MAX = 1.4
 const ZOOM_STEP = 0.1
@@ -33,6 +33,10 @@ export function PreviewPanel({ cv }: { cv: CvDocument }) {
 
   const letterEnabled = (cv.coverLetter ?? DEFAULT_COVER_LETTER).enabled
   const showingLetter = docType === 'letter' && letterEnabled
+  // The scaled wrapper below needs an explicit width to reserve — `transform: scale()`
+  // doesn't affect layout size, so without this the scroll container wouldn't know how
+  // far right multiple side-by-side pages actually extend.
+  const contentWidth = showingLetter ? PAGE_WIDTH_PX : pageCount * PAGE_WIDTH_PX + (pageCount - 1) * PAGE_GAP_PX
 
   async function handleExport() {
     setExporting(true)
@@ -105,12 +109,12 @@ export function PreviewPanel({ cv }: { cv: CvDocument }) {
       </div>
 
       <div className="thin-scrollbar flex-1 overflow-auto p-8">
-        <div className="mx-auto" style={{ width: PAGE_WIDTH * zoom }}>
-          <div style={{ transform: `scale(${zoom})`, transformOrigin: 'top left', width: PAGE_WIDTH }}>
+        <div className="mx-auto" style={{ width: contentWidth * zoom }}>
+          <div style={{ transform: `scale(${zoom})`, transformOrigin: 'top left', width: contentWidth }}>
             {showingLetter ? (
               <CoverLetterPreview cv={cv} pageRef={pageRef} />
             ) : (
-              <CvPreview cv={cv} pageRef={pageRef} onPageCountChange={setPageCount} />
+              <CvPreview cv={cv} onPageCountChange={setPageCount} />
             )}
           </div>
         </div>
