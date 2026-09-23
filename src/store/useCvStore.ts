@@ -5,6 +5,7 @@ import { createEmptyCv, cloneCv, DEFAULT_COVER_LETTER } from '@/lib/defaultData'
 import { findPalette } from '@/lib/palettes'
 import { findFontPairing } from '@/lib/fonts'
 import { buildImportedDocument, type ImportCounts } from '@/lib/importCv'
+import { getEffectiveColumns } from '@/lib/columns'
 import type { ImportedCvData } from '@/lib/importSchema'
 import type { CvConfigJson } from '@/lib/cvConfig'
 import type {
@@ -19,6 +20,7 @@ import type {
   LinkEntry,
   CvTheme,
   SectionId,
+  ColumnLayout,
   CoverLetterContent,
 } from '@/types/cv'
 
@@ -49,6 +51,9 @@ interface CvStore {
   applyFontPairing: (fontPairingId: string) => void
   reorderSections: (order: SectionId[]) => void
   toggleSectionVisibility: (id: SectionId) => void
+  updateColumns: (columns: ColumnLayout[]) => void
+  addColumn: () => void
+  removeColumn: (id: string) => void
 
   addSkill: () => void
   updateSkill: (id: string, patch: Partial<Skill>) => void
@@ -300,7 +305,13 @@ export const useCvStore = create<CvStore>((set, get) => {
 
     applyConfig: (config) => {
       const draft = currentDraftOrThrow()
-      commit({ ...draft, theme: config.theme, sectionOrder: config.sectionOrder, hiddenSections: config.hiddenSections })
+      commit({
+        ...draft,
+        theme: config.theme,
+        sectionOrder: config.sectionOrder,
+        hiddenSections: config.hiddenSections,
+        columns: config.columns,
+      })
     },
 
     updatePersonal: (patch) => {
@@ -344,6 +355,34 @@ export const useCvStore = create<CvStore>((set, get) => {
         ? draft.hiddenSections.filter((s) => s !== id)
         : [...draft.hiddenSections, id]
       commit({ ...draft, hiddenSections: hidden })
+    },
+
+    updateColumns: (columns) => commit({ ...currentDraftOrThrow(), columns }),
+
+    addColumn: () => {
+      const draft = currentDraftOrThrow()
+      const current = getEffectiveColumns(draft, { includeHidden: true })
+      if (current.length >= 4) return
+      const shrink = current.length / (current.length + 1)
+      const shrunk = current.map((c) => ({ ...c, widthPercent: c.widthPercent * shrink }))
+      const newWidth = 100 - shrunk.reduce((sum, c) => sum + c.widthPercent, 0)
+      commit({ ...draft, columns: [...shrunk, { id: genId(), widthPercent: newWidth, sectionIds: [] }] })
+    },
+
+    removeColumn: (id) => {
+      const draft = currentDraftOrThrow()
+      const current = getEffectiveColumns(draft, { includeHidden: true })
+      if (current.length <= 1) return
+      const removed = current.find((c) => c.id === id)
+      if (!removed) return
+      const remaining = current.filter((c) => c.id !== id)
+      const grow = 100 / Math.max(1, 100 - removed.widthPercent)
+      const columns = remaining.map((c, i) => ({
+        ...c,
+        widthPercent: c.widthPercent * grow,
+        sectionIds: i === 0 ? [...c.sectionIds, ...removed.sectionIds] : c.sectionIds,
+      }))
+      commit({ ...draft, columns })
     },
 
     addSkill: skillActions.add,

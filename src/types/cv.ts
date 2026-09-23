@@ -79,7 +79,7 @@ export type SectionId =
   | 'certifications'
   | 'links'
 
-export type TemplateId = 'sidebar' | 'minimal' | 'two-column' | 'elegant' | 'compact-ats'
+export type TemplateId = 'sidebar' | 'minimal' | 'two-column' | 'elegant' | 'compact-ats' | 'custom'
 /** 'corner' is a special case, not just another radius: no border/frame at all, and
  * sized/positioned by the template itself to fill the top-left corner of the page edge
  * to edge, rather than sitting as a small avatar inside the header's normal padding. */
@@ -129,6 +129,18 @@ export interface CvTheme {
   descriptionStyle?: DescriptionStyle
 }
 
+/** One column in a column-based template (Barra lateral, Dos columnas, Personalizada) —
+ * which sections it holds (in order) and how wide it is. Lives on `CvDocument`, not
+ * `CvTheme`, alongside `sectionOrder`/`hiddenSections`: it's the same kind of "layout of
+ * sections" data, just split across columns instead of one flat list. See
+ * `lib/columns.ts`'s `getEffectiveColumns` for the one place that reconciles this against
+ * `sectionOrder`/`hiddenSections` (and falls back to a 35/65 default when absent). */
+export interface ColumnLayout {
+  id: string
+  widthPercent: number
+  sectionIds: SectionId[]
+}
+
 /** A cover letter paired 1:1 with its CV — lives inside the same document (not a
  * separate table) precisely so it always travels together with the CV it belongs to
  * and automatically shares its look (theme colors, fonts) for a matching pair. `enabled`
@@ -161,6 +173,11 @@ export interface CvDocument {
   links: LinkEntry[]
   sectionOrder: SectionId[]
   hiddenSections: SectionId[]
+  /** Optional for backward compatibility with CVs saved before columns were editable —
+   * treat a missing/empty value as the old fixed 35/65 split (see `lib/columns.ts`'s
+   * `DEFAULT_COLUMNS`). Only meaningful for column-based templates; single-column
+   * templates (Minimal, Elegante, ATS compacta) ignore it entirely. */
+  columns?: ColumnLayout[]
   theme: CvTheme
   /** Optional for backward compatibility with CVs saved before this feature existed —
    * treat a missing value as "no cover letter yet" (see lib/defaultData.ts's

@@ -2,26 +2,24 @@ import type { CvDocument } from '@/types/cv'
 import { getSpacing } from '@/lib/themeRuntime'
 import { getContrastText } from '@/lib/color'
 import { sectionHasContent } from '@/lib/sections'
-import { getTwoSlotColumns } from '@/lib/columns'
+import { getEffectiveColumns } from '@/lib/columns'
 import { ContactInfo } from '@/components/preview/ContactInfo'
 import { Avatar } from '@/components/preview/AvatarPlaceholder'
 import { CornerPhoto } from '@/components/preview/CornerPhoto'
 import { SECTION_BLOCKS } from '@/components/preview/sectionBlocks'
 
-/** A full-width colored header (unlike Sidebar's full-height side panel) followed by two
- * plain white columns — the same "list column vs. narrative column" split as Sidebar,
- * just lighter and less boxed-in. Shares the same column data (`lib/columns.ts`) even
- * though nothing here is an actual sidebar; it's the same grouping decision either way. */
-export function TwoColumnTemplate({ cv }: { cv: CvDocument }) {
+/** Same header band as "Dos columnas", but the body underneath is however many columns
+ * (1-4) the user set up in Diseño → Secciones, each at its own width — plain white, no
+ * per-column chrome, since it's meant as the free-form option rather than a distinct
+ * visual style of its own. */
+export function CustomTemplate({ cv }: { cv: CvDocument }) {
   const { theme } = cv
   const spacing = getSpacing(theme.density)
   const headerText = getContrastText(theme.primaryColor)
-
-  const [listColumn, mainColumn] = getTwoSlotColumns(cv)
-  const listSections = listColumn.sectionIds.filter((id) => sectionHasContent(cv, id))
-  const mainSections = mainColumn.sectionIds.filter((id) => sectionHasContent(cv, id))
+  const columns = getEffectiveColumns(cv)
   const fullName = `${cv.personal.firstName} ${cv.personal.lastName}`.trim()
   const headerPad = spacing.pagePadding * 0.7
+  const hasAnyContent = columns.some((col) => col.sectionIds.some((id) => sectionHasContent(cv, id)))
 
   return (
     <div className="flex flex-1 flex-col" style={{ fontFamily: theme.bodyFont, fontSize: 14 * theme.fontScale, color: theme.textColor }}>
@@ -50,26 +48,26 @@ export function TwoColumnTemplate({ cv }: { cv: CvDocument }) {
       </header>
 
       <div className="flex flex-1">
-        <div
-          className="shrink-0 border-r border-black/10"
-          style={{ width: `${listColumn.widthPercent}%`, padding: spacing.pagePadding * 0.85 }}
-        >
-          {listSections.map((id) => {
-            const Block = SECTION_BLOCKS[id]
-            return <Block key={id} cv={cv} theme={theme} spacing={spacing} tone="page" />
-          })}
-        </div>
-        <div className="flex-1" style={{ padding: spacing.pagePadding }}>
-          {mainSections.map((id) => {
-            const Block = SECTION_BLOCKS[id]
-            return <Block key={id} cv={cv} theme={theme} spacing={spacing} tone="page" />
-          })}
-          {mainSections.length === 0 && (
-            <p className="text-sm italic opacity-40">
-              Rellena el configurador de la izquierda: tu experiencia, educación y proyectos aparecerán aquí.
-            </p>
-          )}
-        </div>
+        {columns.map((col, i) => {
+          const sectionIds = col.sectionIds.filter((id) => sectionHasContent(cv, id))
+          return (
+            <div
+              key={col.id}
+              className={i > 0 ? 'border-l border-black/10' : ''}
+              style={{ width: `${col.widthPercent}%`, padding: spacing.pagePadding * 0.85 }}
+            >
+              {sectionIds.map((id) => {
+                const Block = SECTION_BLOCKS[id]
+                return <Block key={id} cv={cv} theme={theme} spacing={spacing} tone="page" />
+              })}
+            </div>
+          )
+        })}
+        {!hasAnyContent && (
+          <p className="p-5 text-sm italic opacity-40">
+            Rellena el configurador de la izquierda: tu experiencia, educación y proyectos aparecerán aquí.
+          </p>
+        )}
       </div>
     </div>
   )

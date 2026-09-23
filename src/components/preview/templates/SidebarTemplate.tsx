@@ -1,7 +1,8 @@
 import type { CvDocument } from '@/types/cv'
 import { getSpacing } from '@/lib/themeRuntime'
 import { getContrastText } from '@/lib/color'
-import { SIDEBAR_SECTIONS, MAIN_SECTIONS, sectionHasContent } from '@/lib/sections'
+import { sectionHasContent } from '@/lib/sections'
+import { getTwoSlotColumns } from '@/lib/columns'
 import { ContactInfo } from '@/components/preview/ContactInfo'
 import { Avatar } from '@/components/preview/AvatarPlaceholder'
 import { CornerPhoto } from '@/components/preview/CornerPhoto'
@@ -13,20 +14,17 @@ export function SidebarTemplate({ cv }: { cv: CvDocument }) {
   const sidebarText = getContrastText(theme.primaryColor)
   const asidePad = spacing.pagePadding * 0.75
 
-  const sidebarSections = cv.sectionOrder.filter(
-    (id) => SIDEBAR_SECTIONS.includes(id) && !cv.hiddenSections.includes(id) && sectionHasContent(cv, id),
-  )
-  const mainSections = cv.sectionOrder.filter(
-    (id) => MAIN_SECTIONS.includes(id) && !cv.hiddenSections.includes(id) && sectionHasContent(cv, id),
-  )
+  const [sidebarColumn, mainColumn] = getTwoSlotColumns(cv)
+  const sidebarSections = sidebarColumn.sectionIds.filter((id) => sectionHasContent(cv, id))
+  const mainSections = mainColumn.sectionIds.filter((id) => sectionHasContent(cv, id))
 
   const fullName = `${cv.personal.firstName} ${cv.personal.lastName}`.trim()
 
   return (
     <div className="flex flex-1" style={{ fontFamily: theme.bodyFont, fontSize: 14 * theme.fontScale, color: theme.textColor }}>
       <aside
-        className="flex w-[35%] shrink-0 flex-col"
-        style={{ backgroundColor: theme.primaryColor, color: sidebarText, padding: asidePad }}
+        className="flex shrink-0 flex-col"
+        style={{ width: `${sidebarColumn.widthPercent}%`, backgroundColor: theme.primaryColor, color: sidebarText, padding: asidePad }}
       >
         {theme.showPhoto && theme.photoShape === 'corner' ? (
           // Negative margin "bleeds" the photo past the aside's own padding on three

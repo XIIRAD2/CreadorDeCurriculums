@@ -2,6 +2,7 @@ import type { CvDocument, CoverLetterContent, SectionId } from '@/types/cv'
 import { genId } from '@/lib/id'
 import { DEFAULT_PALETTE } from '@/lib/palettes'
 import { DEFAULT_FONT_PAIRING } from '@/lib/fonts'
+import { DEFAULT_COLUMNS } from '@/lib/columns'
 
 /** Fallback used wherever `cv.coverLetter` is read — covers CVs saved before this field
  * existed (see the optional-field comment on CoverLetterContent's home in types/cv.ts). */
@@ -53,6 +54,7 @@ export function createEmptyCv(name = 'Mi currículum'): CvDocument {
     links: [],
     sectionOrder: [...DEFAULT_SECTION_ORDER],
     hiddenSections: [],
+    columns: DEFAULT_COLUMNS.map((c) => ({ ...c, sectionIds: [...c.sectionIds] })),
     coverLetter: { ...DEFAULT_COVER_LETTER },
     theme: {
       templateId: 'sidebar',

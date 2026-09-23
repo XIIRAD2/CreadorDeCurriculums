@@ -7,6 +7,7 @@ import { MinimalPdfTemplate } from '@/pdf/MinimalPdfTemplate'
 import { TwoColumnPdfTemplate } from '@/pdf/TwoColumnPdfTemplate'
 import { ElegantPdfTemplate } from '@/pdf/ElegantPdfTemplate'
 import { CompactAtsPdfTemplate } from '@/pdf/CompactAtsPdfTemplate'
+import { CustomPdfTemplate } from '@/pdf/CustomPdfTemplate'
 
 const TEMPLATE_COMPONENTS: Record<TemplateId, ComponentType<{ cv: CvData }>> = {
   sidebar: SidebarPdfTemplate,
@@ -14,6 +15,7 @@ const TEMPLATE_COMPONENTS: Record<TemplateId, ComponentType<{ cv: CvData }>> = {
   'two-column': TwoColumnPdfTemplate,
   elegant: ElegantPdfTemplate,
   'compact-ats': CompactAtsPdfTemplate,
+  custom: CustomPdfTemplate,
 }
 
 export function CvPdfDocument({ cv }: { cv: CvData }) {

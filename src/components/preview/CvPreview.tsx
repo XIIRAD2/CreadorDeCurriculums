@@ -5,8 +5,10 @@ import { MinimalTemplate } from '@/components/preview/templates/MinimalTemplate'
 import { TwoColumnTemplate } from '@/components/preview/templates/TwoColumnTemplate'
 import { ElegantTemplate } from '@/components/preview/templates/ElegantTemplate'
 import { CompactAtsTemplate } from '@/components/preview/templates/CompactAtsTemplate'
+import { CustomTemplate } from '@/components/preview/templates/CustomTemplate'
 import { usePagination } from '@/components/preview/usePagination'
 import { PAGE_WIDTH_PX, PAGE_HEIGHT_PX } from '@/components/preview/pageSize'
+import { ColumnResizeOverlay } from '@/components/preview/ColumnResizeOverlay'
 
 const TEMPLATE_COMPONENTS: Record<TemplateId, ComponentType<{ cv: CvDocument }>> = {
   sidebar: SidebarTemplate,
@@ -14,7 +16,10 @@ const TEMPLATE_COMPONENTS: Record<TemplateId, ComponentType<{ cv: CvDocument }>>
   'two-column': TwoColumnTemplate,
   elegant: ElegantTemplate,
   'compact-ats': CompactAtsTemplate,
+  custom: CustomTemplate,
 }
+
+const COLUMN_TEMPLATES: TemplateId[] = ['sidebar', 'two-column', 'custom']
 
 interface CvPreviewProps {
   cv: CvDocument
@@ -59,8 +64,9 @@ export function CvPreview({ cv, onPageCountChange }: CvPreviewProps) {
       </div>
 
       {pageCount <= 1 ? (
-        <div className="cv-page shadow-2xl shadow-slate-400/30" style={{ overflow: 'hidden' }}>
+        <div className="relative cv-page shadow-2xl shadow-slate-400/30" style={{ overflow: 'hidden' }}>
           <Template cv={cv} />
+          {COLUMN_TEMPLATES.includes(cv.theme.templateId) && <ColumnResizeOverlay cv={cv} />}
         </div>
       ) : (
         <div className="flex flex-row items-start gap-6">
@@ -69,7 +75,7 @@ export function CvPreview({ cv, onPageCountChange }: CvPreviewProps) {
             return (
               <div
                 key={i}
-                className="cv-page shrink-0 shadow-2xl shadow-slate-400/30"
+                className="relative cv-page shrink-0 shadow-2xl shadow-slate-400/30"
                 style={{ height: PAGE_HEIGHT_PX, overflow: 'hidden' }}
               >
                 <div style={{ height: pageHeight, overflow: 'hidden' }}>
@@ -77,6 +83,9 @@ export function CvPreview({ cv, onPageCountChange }: CvPreviewProps) {
                     <Template cv={cv} />
                   </div>
                 </div>
+                {/* Only page 1 needs the resize handles — every page shows the same
+                    columns, dragging on any of them would adjust the same widths. */}
+                {i === 0 && COLUMN_TEMPLATES.includes(cv.theme.templateId) && <ColumnResizeOverlay cv={cv} />}
               </div>
             )
           })}

@@ -2,6 +2,7 @@ import { Eye, EyeOff } from 'lucide-react'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 import { ColorPickerPopover } from '@/components/ui/ColorPickerPopover'
 import { SortableList } from '@/components/ui/SortableList'
+import { ColumnSections } from '@/components/configurator/ColumnSections'
 import { ConfigTransfer } from '@/components/configurator/ConfigTransfer'
 import { COLOR_PALETTES } from '@/lib/palettes'
 import { FONT_PAIRINGS } from '@/lib/fonts'
@@ -14,7 +15,10 @@ const TEMPLATES: { id: TemplateId; label: string }[] = [
   { id: 'two-column', label: 'Dos columnas' },
   { id: 'elegant', label: 'Elegante' },
   { id: 'compact-ats', label: 'ATS compacta' },
+  { id: 'custom', label: 'Personalizada' },
 ]
+
+const COLUMN_TEMPLATES: TemplateId[] = ['sidebar', 'two-column', 'custom']
 
 const DENSITIES: { id: Density; label: string }[] = [
   { id: 'compact', label: 'Compacta' },
@@ -74,6 +78,23 @@ function TemplateThumb({ id, color }: { id: TemplateId; color: string }) {
       </span>
     )
   }
+  if (id === 'custom') {
+    return (
+      <span className="flex h-12 w-full flex-col overflow-hidden rounded-md border border-slate-200 bg-white">
+        <span className="h-2 w-full" style={{ backgroundColor: color }} />
+        <span className="flex flex-1">
+          <span className="w-1/4 space-y-1 border-r border-slate-100 p-1" />
+          <span className="w-1/4 space-y-1 border-r border-slate-100 p-1">
+            <span className="block h-1 w-full rounded bg-slate-200" />
+          </span>
+          <span className="flex-1 space-y-1 p-1">
+            <span className="block h-1 w-full rounded bg-slate-200" />
+            <span className="block h-1 w-2/3 rounded bg-slate-200" />
+          </span>
+        </span>
+      </span>
+    )
+  }
   if (id === 'compact-ats') {
     return (
       <span className="flex h-12 w-full flex-col overflow-hidden rounded-md border border-slate-200 bg-white p-1.5">
@@ -96,6 +117,7 @@ function TemplateThumb({ id, color }: { id: TemplateId; color: string }) {
 }
 
 export function DesignForm() {
+  const draft = useCvStore((s) => s.draft)
   const theme = useCvStore((s) => s.draft?.theme)
   const sectionOrder = useCvStore((s) => s.draft?.sectionOrder)
   const hiddenSections = useCvStore((s) => s.draft?.hiddenSections)
@@ -104,8 +126,11 @@ export function DesignForm() {
   const applyFontPairing = useCvStore((s) => s.applyFontPairing)
   const reorderSections = useCvStore((s) => s.reorderSections)
   const toggleSectionVisibility = useCvStore((s) => s.toggleSectionVisibility)
+  const updateColumns = useCvStore((s) => s.updateColumns)
+  const addColumn = useCvStore((s) => s.addColumn)
+  const removeColumn = useCvStore((s) => s.removeColumn)
 
-  if (!theme || !sectionOrder || !hiddenSections) return null
+  if (!draft || !theme || !sectionOrder || !hiddenSections) return null
 
   return (
     <div>
@@ -307,32 +332,50 @@ export function DesignForm() {
 
         <div>
           <h3 className="mb-2 text-sm font-semibold text-slate-700">Secciones</h3>
-          <p className="mb-2 text-xs text-slate-500">Arrastra para reordenar y usa el icono para ocultar una sección.</p>
-          <SortableList
-            items={sectionOrder.map((id) => ({ id }))}
-            onReorder={(ids) => reorderSections(ids as SectionId[])}
-            className="space-y-1.5"
-            renderItem={({ id }) => {
-              const hidden = hiddenSections.includes(id)
-              return (
-                <div
-                  className={`flex items-center justify-between rounded-lg border px-2.5 py-1.5 text-sm ${
-                    hidden ? 'border-slate-100 bg-slate-50 text-slate-400' : 'border-slate-200 text-slate-700'
-                  }`}
-                >
-                  {SECTION_LABELS[id]}
-                  <button
-                    type="button"
-                    onClick={() => toggleSectionVisibility(id)}
-                    aria-label={hidden ? 'Mostrar sección' : 'Ocultar sección'}
-                    className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
-                  >
-                    {hidden ? <EyeOff size={14} /> : <Eye size={14} />}
-                  </button>
-                </div>
-              )
-            }}
-          />
+          {COLUMN_TEMPLATES.includes(theme.templateId) ? (
+            <>
+              <p className="mb-2 text-xs text-slate-500">
+                Arrastra secciones entre columnas para moverlas, y usa el icono para ocultar una.
+                {theme.templateId === 'custom' && ' También puedes cambiar el ancho arrastrando la frontera entre columnas en la vista previa.'}
+              </p>
+              <ColumnSections
+                cv={draft}
+                onColumnsChange={updateColumns}
+                onToggleVisibility={toggleSectionVisibility}
+                onAddColumn={addColumn}
+                onRemoveColumn={removeColumn}
+              />
+            </>
+          ) : (
+            <>
+              <p className="mb-2 text-xs text-slate-500">Arrastra para reordenar y usa el icono para ocultar una sección.</p>
+              <SortableList
+                items={sectionOrder.map((id) => ({ id }))}
+                onReorder={(ids) => reorderSections(ids as SectionId[])}
+                className="space-y-1.5"
+                renderItem={({ id }) => {
+                  const hidden = hiddenSections.includes(id)
+                  return (
+                    <div
+                      className={`flex items-center justify-between rounded-lg border px-2.5 py-1.5 text-sm ${
+                        hidden ? 'border-slate-100 bg-slate-50 text-slate-400' : 'border-slate-200 text-slate-700'
+                      }`}
+                    >
+                      {SECTION_LABELS[id]}
+                      <button
+                        type="button"
+                        onClick={() => toggleSectionVisibility(id)}
+                        aria-label={hidden ? 'Mostrar sección' : 'Ocultar sección'}
+                        className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                      >
+                        {hidden ? <EyeOff size={14} /> : <Eye size={14} />}
+                      </button>
+                    </div>
+                  )
+                }}
+              />
+            </>
+          )}
         </div>
 
         <ConfigTransfer />

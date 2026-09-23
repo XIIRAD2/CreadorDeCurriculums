@@ -2,7 +2,8 @@ import { View, Text } from '@react-pdf/renderer'
 import type { CvDocument } from '@/types/cv'
 import { getSpacing } from '@/lib/themeRuntime'
 import { getContrastText, withAlpha } from '@/lib/color'
-import { SIDEBAR_SECTIONS, MAIN_SECTIONS, sectionHasContent } from '@/lib/sections'
+import { sectionHasContent } from '@/lib/sections'
+import { getTwoSlotColumns } from '@/lib/columns'
 import { getPdfFontFamilies } from '@/pdf/fonts'
 import { pt, em } from '@/pdf/units'
 import { AvatarPdf } from '@/pdf/AvatarPdf'
@@ -18,13 +19,11 @@ export function SidebarPdfTemplate({ cv }: { cv: CvDocument }) {
   const sidebarText = getContrastText(theme.primaryColor)
   const asidePad = pt(spacing.pagePadding * 0.75)
 
-  const sidebarSections = cv.sectionOrder.filter(
-    (id) => SIDEBAR_SECTIONS.includes(id) && !cv.hiddenSections.includes(id) && sectionHasContent(cv, id),
-  )
-  const mainSections = cv.sectionOrder.filter(
-    (id) => MAIN_SECTIONS.includes(id) && !cv.hiddenSections.includes(id) && sectionHasContent(cv, id),
-  )
+  const [sidebarColumn, mainColumn] = getTwoSlotColumns(cv)
+  const sidebarSections = sidebarColumn.sectionIds.filter((id) => sectionHasContent(cv, id))
+  const mainSections = mainColumn.sectionIds.filter((id) => sectionHasContent(cv, id))
   const fullName = `${cv.personal.firstName} ${cv.personal.lastName}`.trim()
+  const sidebarWidth = `${sidebarColumn.widthPercent}%`
 
   return (
     // Absolutely positioned + `fixed` (not a flex row) on purpose: a plain flex row
@@ -43,7 +42,7 @@ export function SidebarPdfTemplate({ cv }: { cv: CvDocument }) {
           top: 0,
           left: 0,
           bottom: 0,
-          width: '35%',
+          width: sidebarWidth,
           backgroundColor: theme.primaryColor,
           padding: pt(spacing.pagePadding * 0.75),
         }}
@@ -108,7 +107,7 @@ export function SidebarPdfTemplate({ cv }: { cv: CvDocument }) {
         })}
       </View>
 
-      <View style={{ marginLeft: '35%', padding: pt(spacing.pagePadding) }}>
+      <View style={{ marginLeft: sidebarWidth, padding: pt(spacing.pagePadding) }}>
         {mainSections.map((id) => {
           const Block = SECTION_BLOCKS_PDF[id]
           return <Block key={id} cv={cv} theme={theme} spacing={spacing} tone="page" fonts={fonts} textColor={theme.textColor} />

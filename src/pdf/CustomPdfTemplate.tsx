@@ -3,7 +3,7 @@ import type { CvDocument } from '@/types/cv'
 import { getSpacing } from '@/lib/themeRuntime'
 import { getContrastText, withAlpha } from '@/lib/color'
 import { sectionHasContent } from '@/lib/sections'
-import { getTwoSlotColumns } from '@/lib/columns'
+import { getEffectiveColumns } from '@/lib/columns'
 import { getPdfFontFamilies } from '@/pdf/fonts'
 import { pt, em } from '@/pdf/units'
 import { AvatarPdf } from '@/pdf/AvatarPdf'
@@ -11,19 +11,13 @@ import { CornerPhotoPdf } from '@/pdf/CornerPhotoPdf'
 import { ContactInfoPdf } from '@/pdf/ContactInfoPdf'
 import { SECTION_BLOCKS_PDF } from '@/pdf/sectionBlocksPdf'
 
-/** Mirrors templates/TwoColumnTemplate.tsx value-for-value. Unlike SidebarPdfTemplate,
- * neither column here is a colored full-height block, so the multi-page "empty colored
- * bar" problem that needed the fixed/absolute trick there doesn't apply — a plain row
- * is enough; a short column on a later page just leaves blank space, which is normal. */
-export function TwoColumnPdfTemplate({ cv }: { cv: CvDocument }) {
+/** Mirrors templates/CustomTemplate.tsx value-for-value. */
+export function CustomPdfTemplate({ cv }: { cv: CvDocument }) {
   const { theme } = cv
   const spacing = getSpacing(theme.density)
   const fonts = getPdfFontFamilies(theme.fontPairingId)
   const headerText = getContrastText(theme.primaryColor)
-
-  const [listColumn, mainColumn] = getTwoSlotColumns(cv)
-  const listSections = listColumn.sectionIds.filter((id) => sectionHasContent(cv, id))
-  const mainSections = mainColumn.sectionIds.filter((id) => sectionHasContent(cv, id))
+  const columns = getEffectiveColumns(cv)
   const fullName = `${cv.personal.firstName} ${cv.personal.lastName}`.trim()
   const headerPad = pt(spacing.pagePadding * 0.7)
 
@@ -77,25 +71,24 @@ export function TwoColumnPdfTemplate({ cv }: { cv: CvDocument }) {
       </View>
 
       <View style={{ flexDirection: 'row', flexGrow: 1 }}>
-        <View
-          style={{
-            width: `${listColumn.widthPercent}%`,
-            borderRightWidth: pt(1),
-            borderRightColor: 'rgba(0,0,0,0.1)',
-            padding: pt(spacing.pagePadding * 0.85),
-          }}
-        >
-          {listSections.map((id) => {
-            const Block = SECTION_BLOCKS_PDF[id]
-            return <Block key={id} cv={cv} theme={theme} spacing={spacing} tone="page" fonts={fonts} textColor={theme.textColor} />
-          })}
-        </View>
-        <View style={{ flex: 1, padding: pt(spacing.pagePadding) }}>
-          {mainSections.map((id) => {
-            const Block = SECTION_BLOCKS_PDF[id]
-            return <Block key={id} cv={cv} theme={theme} spacing={spacing} tone="page" fonts={fonts} textColor={theme.textColor} />
-          })}
-        </View>
+        {columns.map((col, i) => {
+          const sectionIds = col.sectionIds.filter((id) => sectionHasContent(cv, id))
+          return (
+            <View
+              key={col.id}
+              style={{
+                width: `${col.widthPercent}%`,
+                padding: pt(spacing.pagePadding * 0.85),
+                ...(i > 0 ? { borderLeftWidth: pt(1), borderLeftColor: 'rgba(0,0,0,0.1)' } : {}),
+              }}
+            >
+              {sectionIds.map((id) => {
+                const Block = SECTION_BLOCKS_PDF[id]
+                return <Block key={id} cv={cv} theme={theme} spacing={spacing} tone="page" fonts={fonts} textColor={theme.textColor} />
+              })}
+            </View>
+          )
+        })}
       </View>
     </View>
   )

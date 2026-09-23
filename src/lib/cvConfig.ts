@@ -1,20 +1,23 @@
 import { SECTION_LABELS } from '@/types/cv'
-import type { CvDocument, CvTheme, SectionId, Density, PhotoShape, TemplateId, DescriptionStyle } from '@/types/cv'
+import { genId } from '@/lib/id'
+import { DEFAULT_COLUMNS } from '@/lib/columns'
+import type { CvDocument, CvTheme, SectionId, ColumnLayout, Density, PhotoShape, TemplateId, DescriptionStyle } from '@/types/cv'
 
-/** Just the *design* of a CV — theme + section order/visibility — deliberately separate
- * from its content (lib/cvExport.ts). The point: set up your favorite look once, export
- * it, and apply it to every new CV in one click instead of reconfiguring colors/fonts/
- * density by hand each time. */
+/** Just the *design* of a CV — theme + section order/visibility/columns — deliberately
+ * separate from its content (lib/cvExport.ts). The point: set up your favorite look once,
+ * export it, and apply it to every new CV in one click instead of reconfiguring colors/
+ * fonts/density/columns by hand each time. */
 export interface CvConfigJson {
   theme: CvTheme
   sectionOrder: SectionId[]
   hiddenSections: SectionId[]
+  columns: ColumnLayout[]
 }
 
 const ALL_SECTIONS = Object.keys(SECTION_LABELS) as SectionId[]
 const DENSITIES: Density[] = ['compact', 'comfortable', 'spacious']
 const PHOTO_SHAPES: PhotoShape[] = ['circle', 'rounded', 'square', 'corner']
-const TEMPLATES: TemplateId[] = ['sidebar', 'minimal', 'two-column', 'elegant', 'compact-ats']
+const TEMPLATES: TemplateId[] = ['sidebar', 'minimal', 'two-column', 'elegant', 'compact-ats', 'custom']
 const DESCRIPTION_STYLES: DescriptionStyle[] = ['paragraph', 'bullets']
 
 export function exportCvConfig(cv: CvDocument): CvConfigJson {
@@ -22,6 +25,7 @@ export function exportCvConfig(cv: CvDocument): CvConfigJson {
     theme: cv.theme,
     sectionOrder: cv.sectionOrder,
     hiddenSections: cv.hiddenSections,
+    columns: cv.columns && cv.columns.length > 0 ? cv.columns : DEFAULT_COLUMNS,
   }
 }
 
@@ -50,6 +54,35 @@ function sectionArray(value: unknown, fallback: SectionId[]): SectionId[] {
   if (!Array.isArray(value)) return fallback
   const valid = value.filter((v): v is SectionId => typeof v === 'string' && ALL_SECTIONS.includes(v as SectionId))
   return valid.length > 0 ? valid : fallback
+}
+
+/** Same defensive, field-by-field rebuild as the rest of this file, plus the same
+ * "any known section missing from every column gets appended to the last one" self-
+ * healing `sectionOrder` already gets below — so a hand-edited or partial `columns`
+ * array can never leave a section unreachable in the Diseño-tab editor. */
+function columnsArray(value: unknown, fallback: ColumnLayout[]): ColumnLayout[] {
+  if (!Array.isArray(value) || value.length === 0 || value.length > 4) return fallback
+
+  const parsed: ColumnLayout[] = []
+  for (const item of value) {
+    if (typeof item !== 'object' || item === null) continue
+    const obj = item as Record<string, unknown>
+    const sectionIds = Array.isArray(obj.sectionIds)
+      ? obj.sectionIds.filter((s): s is SectionId => typeof s === 'string' && ALL_SECTIONS.includes(s as SectionId))
+      : []
+    parsed.push({
+      id: str(obj.id, genId()),
+      widthPercent: clampedNum(obj.widthPercent, 100 / value.length, 5, 95),
+      sectionIds,
+    })
+  }
+  if (parsed.length === 0) return fallback
+
+  const assigned = new Set(parsed.flatMap((c) => c.sectionIds))
+  const missing = ALL_SECTIONS.filter((s) => !assigned.has(s))
+  if (missing.length > 0) parsed[parsed.length - 1].sectionIds.push(...missing)
+
+  return parsed
 }
 
 export type ConfigParseResult = { ok: true; data: CvConfigJson } | { ok: false; error: string }
@@ -98,6 +131,7 @@ export function parseCvConfigJson(raw: string, base: CvDocument): ConfigParseRes
   // section stays reachable/toggleable instead of silently disappearing from the tabs.
   const completeOrder = [...sectionOrder, ...ALL_SECTIONS.filter((s) => !sectionOrder.includes(s))]
   const hiddenSections = sectionArray(obj.hiddenSections, base.hiddenSections).filter((s) => completeOrder.includes(s))
+  const columns = columnsArray(obj.columns, base.columns && base.columns.length > 0 ? base.columns : DEFAULT_COLUMNS)
 
-  return { ok: true, data: { theme, sectionOrder: completeOrder, hiddenSections } }
+  return { ok: true, data: { theme, sectionOrder: completeOrder, hiddenSections, columns } }
 }
